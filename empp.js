@@ -141,21 +141,21 @@ function Redisave(phones,message,res,executor){
 	 var phonenum=phones.length;
 	 var total=phonenum*divlength;
 	 res.write(total.toString(10));
-	 var substart=Sequence_Id;
+	 var substart=Sequence_Id+1;
 	 Sequence_Id+=total;//this range of SI is occupied by submitSI |no other function can use
 	 redisclient.incrby('sqid',total);
 	 var sql="insert into empplog (sqid,phone,content,status,time,executor) values ";
 	 var sqlword=new Array();
-	 for (i=1;i<=phonenum;i++){
-	 	for (j=1;j<=divlength;j++){
+         for (i=0;i<phonenum;i++){
+	 	for (j=0;j<divlength;j++){
 		 	date=new Date();
-		 	sqlword.push(mysqlclient.format("(?,?,?,?,?,?)",[i*j+substart,phones[i-1],divmes[j-1],0,date,executor]));
-		 	redisclient.del(i*j+substart);
-		 	redisclient.hset(i*j+substart,phones[i-1],divmes[j-1]);
-		 	redisclient.expire(i*j+substart,3600);
-		 	redisclient.rpush('empplist',i*j+substart);	
+		 	sqlword.push(mysqlclient.format("(?,?,?,?,?,?)",[i*divlength+j+substart,phones[i],divmes[j],0,date,executor]));
+		 	redisclient.del(i*divlength+j+substart);
+		 	redisclient.hset(i*divlength+j+substart,phones[i],divmes[j]);
+		 	redisclient.expire(i*divlength+j+substart,3600);
+		 	redisclient.rpush('empplist',i*divlength+j+substart);	
 		}
-	 }
+	 }	
  		sql += sqlword.join(",");
 		//console.log("sql="+sql);
 		mysqlclient.query(sql);	 
